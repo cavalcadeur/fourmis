@@ -1,0 +1,319 @@
+1er essai :
+
+Infos données aux fourmis : direction des fourmis ennemis, de la nourriture et de leur nid personnel
+
+Barème de selection : - cogner un mur : - 1
+                      - attrapper de la nourriture : + 5
+                      - déposer de la nourriture au nid : + 10
+
+nombre d'erreurs lors d'une reproduction : 5
+
+nombre de générations : 500 (on n'observe que la 500eme)
+
+nombre de tournois avant la selection : 3
+
+notes préalables : On ne s'attend pas à quelque chose de révolutionnaire mais ça peut être un début. On ne pénalise pas les collisions entre fourmis pour permettre des mélées eventuelles au centre.
+                   De plus on fait bien attention à placer les fourmis à des positions de départ différentes à chaque nouveau tournoi pour éviter la surspécialisation.
+
+notes après le premier test : Elles sont completement stupides. Très peu des fourmis finales parviennent à obtenir un score positif. Elles foncent beaucoup dans les murs.
+
+
+#########################
+
+
+2eme essai :
+
+Infos données aux fourmis : direction des fourmis ennemis, de la nourriture et de leur nid personnel
+
+Barème de selection : - cogner un mur : - 1000
+                      - attrapper de la nourriture : + 1
+                      - déposer de la nourriture au nid : + 2
+
+nombre d'erreurs lors d'une reproduction : 5
+
+nombre de générations : 500 (on n'observe que la 500eme)
+
+nombre de tournois avant la selection : 3
+
+notes préalables : Aucunes
+
+notes après le premier test : Certaines foncent encore BEAUCOUP dans les murs. Elles ignorent completement la nourriture.
+
+
+#########################
+
+
+3eme essai :
+
+Infos données aux fourmis : direction des fourmis ennemis, de la nourriture et de leur nid personnel
+
+Barème de selection : - cogner un mur : - 1
+                      - attrapper de la nourriture : + 50
+                      - déposer de la nourriture au nid : + 100
+
+nombre d'erreurs lors d'une reproduction : 10
+
+nombre de générations : 500 (on n'observe que la 500eme)
+
+nombre de tournois avant la selection : 4
+
+notes préalables : 
+
+notes après le premier test : Certaines foncent encore BEAUCOUP dans les murs. Elles ignorent completement la nourriture.
+
+
+#########################
+
+
+4eme essai :
+
+Infos données aux fourmis : direction de la nourriture et de leur nid personnel
+
+Barème de selection : - cogner un mur : - 1
+                      - attrapper de la nourriture : + 50
+                      - déposer de la nourriture au nid : + 100
+
+nombre d'erreurs lors d'une reproduction : 10
+
+nombre de générations : 500 (on n'observe que la 500eme)
+
+nombre de tournois avant la selection : 4
+
+notes préalables : On évite le chaos lié aux placements des autres fourmis
+
+notes après le premier test : On obtient des fourmis bien plus malignes qui vont chercher la nourriture et ne cogne pas les murs. 
+
+
+#########################
+
+Après maintes essais, j'ai enfin réussi à trouver un moyen de faire plus de 500 générations.
+J'en ai profité pour changer le système de decision des fourmis qui ont maintenant beaucoup moins de données internes.
+Après plusieurs essais infructueux, il me semble que tous les bugs sont enfin corrigés. Je vais essayer avec un grand nombre de générations.
+
+Résumé du nouveau système de calcul :
+			La fourmi va déterminer un vecteur qui indiquera la direction qu'elle veut prendre. On tirera ensuite au hasard entre les directions qui se rapprochent le plus de la direction du vecteur. En effet la fourmi ne peux se déplacer que dans 4 directions. Si la fourmi determine un vecteur nul, ça arrive, elle va alors vers le haut par défaut.
+			Pour déterminer le vecteur en question, la fourmi regarde les directions de tous les autres éléments du terrain et additionne ses vecteurs entre eux tout en appliquant une pondération sur chacun en fonction de ses coefficients internes. 
+			Par exemple : une fourmi seule avec un tas de nourriture à droite et une fourmi ennemi en haut, additionera deux vecteurs : celui en direction de la nourriture et celui en direction de la fourmi cependant elle multipliera le premier vecteur par son coefficient nourriture et le deuxième par son coefficient fourmi ennemie.
+
+			Ainsi chaque fourmi possède 8 coefficients. Il y a 4 types d'objet : nourriture, fourmi ennemie, nid possédé, fourmi alliée    La fourmi peut être dans deux états différents selon si elle transporte de la nourriture ou non. C'est pourquoi il y a bien 4*2 = 8 coefficients.
+
+
+#########################
+
+
+5eme essai :
+
+Infos données aux fourmis : nourriture, nid possédé, fourmis ennemies, fourmis alliées
+
+Barème de selection : - cogner un mur : - 1
+                      - attrapper de la nourriture : + 50
+                      - déposer de la nourriture au nid : + 100
+
+nombre d'erreurs lors d'une reproduction : 2
+
+nombre de générations : 5000 (on n'observe que la 5000eme)
+
+notes préalables : On s'attend à des résultats corrects de fourmis qui font des scores dans l'ensemble positifs.
+
+notes après le premier test : Les scores sont satisfaisants. L'une des fourmis a obtenu 2138 ce qui est un très bon score. Les autres sont plus médiocres, on a un 300 et trois 50. Ainsi que trois 	scores négatifs : -3  -178  -494
+	On constate quelque chose d'étonnant durant le test, 4 des 8 fourmis ont créé un carré immobile pendant toute la durée du match ce qui est étonnant. Les fourmis concernés ne sont d'ailleurs    même pas celles qui ont le pire score.
+
+notes après le second test : Ce second essai est beaucoup plus concluant. Deux fourmis restent à la traîne avec -397 et -410 mais pour les autres, l'exercice est très bien réussi. On a les scores suivants : 50  1348  1495  1500  1800  2100   Ce qui est très bon. Toutes les réserves de nourriture ont été épuisées. Les fourmis ont passés leurs derniers tours à errer au centre du terrain. Comme si elles étaient désoeuvrées ! 
+
+
+#########################
+
+
+6eme essai :
+
+Infos données aux fourmis : nourriture, nid possédé, fourmis ennemies, fourmis alliées
+
+Barème de selection : - cogner un mur : - 1
+                      - attrapper de la nourriture : + 50
+                      - déposer de la nourriture au nid : + 100
+
+nombre d'erreurs lors d'une reproduction : 2
+
+nombre de générations : 50000 (on n'observe que la 50000eme) On passe à dix fois plus de générations juste pour voir.
+
+notes préalables : On s'attend à des résultats corrects de fourmis qui font des scores dans l'ensemble positifs. Mais pas forcément mieux que l'essai 5.
+
+notes après le premier test : Pas forcement de meilleurs résultats. On observe clairement que la totalité des fourmis ont eu un score plutôt bon sauf une qui est très mauvaise.
+
+
+#########################
+
+
+Je décide alors de faire apparaître une forme de competion/cooperation. Pour cela je considère qu'en rammenant de la nourriture à son nid, une fourmi dépose sur celui ci une pile de nourriture qui peut être piller par d'autres. Ainsi, fait interessant, la fourmi peut voler sa propre nourriture si elle rejoint son nid sans transporter de nourriture. Son instinct d'ouvrière forcenée lui fera piller son propre nid. 
+Cela rajoute un 4eme facteur de notation pour les fourmis. En effet, se faire voler de la nourriture fait perdre un certain nombre de point. On pourra essayer de faire varier ce facteur pour observer l'apparition eventuelle de cooperation entre les fourmis.
+
+#########################
+
+
+7eme essai :
+
+Infos données aux fourmis : nourriture, nid possédé, fourmis ennemies, fourmis alliées
+
+Barème de selection : - cogner un mur : - 1
+                      - attrapper de la nourriture : + 50
+                      - déposer de la nourriture au nid : + 100
+					  - se faire voler de la nourriture : - 100
+
+nombre d'erreurs lors d'une reproduction : 2
+
+nombre de générations : 5000 (on n'observe que la 5000eme) On retourne à 5000 générations car les résultats précédents ont montré que c'était suffisant.
+
+notes préalables : Je suis curieux de voir le résultat. A vrai dire, je pense que peu de choses vont réellement changer.
+
+notes après le premier test : Le résultat est plutôt mitigé. L'une des fourmis a atteint 4150 points ce qui est un record ! On observe des comportements étranges. 3 des fourmis semblent rester collée à leur nid comme pour le défendre ce qui marche mais ne leur confère pas les meilleurs scores. Je n'ai pas pu observer toutes les fourmis en même temps mais j'ai vu l'une de ces fourmis stationnaires faire une percée fulgurante pour voler une voisinne et revenir, malheureusement son comportement avec nourriture était erratique et elle a fini ses jours à foncer dans un coin. La grande gagnante n'a pas l'air d'avoir commis de vol mais à cependant defendu son nid et récupéré la nourriture efficacement.
+
+notes après le second test : Test bien moins concluant. 5 d'entre elles avaient des performances admirables en début de partie avant d'atteindre un étrange status quo. Les fourmis se sont rassemblées et sont restées ainsi immobiles durant toute la deuxième moitié du match. Etrange. Il n'y a pas eu de vol.
+
+#########################
+
+
+8eme essai :
+
+Infos données aux fourmis : nourriture, nid possédé, fourmis ennemies, fourmis alliées
+
+Barème de selection : - cogner un mur : - 1
+                      - attrapper de la nourriture : + 50
+                      - déposer de la nourriture au nid : + 100
+					  - se faire voler de la nourriture : - 100
+
+nombre d'erreurs lors d'une reproduction : 2
+
+nombre de générations : 15000 (on n'observe que la 15000eme) 
+
+notes préalables : Avec trois fois plus de générations, j'espère que les fourmis auront le temps de devenir efficaces.
+
+notes après le premier test : Ca marche plutôt bien ! On assiste à un véritable succès de la part de certaine fourmi. L'une d'elle atteint 3400 ! Cependant, les autres sont en échec total. L'une des fourmis a effectué un nombre incroyable de vol ! Cependant, elle a obtenu un très mauvais score. Les autres fourmis ont eu peu d'interêt.
+
+
+
+#########################
+
+Les résultats ne sont pas mirobolants. On n'assiste à aucune coopération ou competition. En tout cas pas flagrante. Et beaucoup de matchs se terminent par un rassemblement de 4 fourmis en groupe compact et immobile. Ce qui est contre productif. 
+Je tente de leur faire prendre en compte la distance des objets à l'aide de 5 coefficients. 
+Voilà comment fonctionne ce système basé sur 5 nombre : a b c d e
+Ces nombres définissent une fonction f(d) = a*d^2 + b*d + c    qui prend la distance et renvoie un coefficient. d et e sont les maxs et mins de cette fonction. Si la valeur de la fonction dépasse d alors le résultat sera d. Il en est de même pour e.
+On ajoute aussi un coefficient menace qui servira plus tard.
+
+#########################
+
+9eme essai :
+
+Infos données aux fourmis : nourriture, nid possédé, fourmis ennemies, fourmis alliées, menaces, distance
+
+Barème de selection : - cogner un mur : - 1
+                      - attrapper de la nourriture : + 50
+                      - déposer de la nourriture au nid : + 100
+					  - se faire voler de la nourriture : - 100
+
+nombre d'erreurs lors d'une reproduction : 2
+
+nombre de générations : 5000 (on n'observe que la 5000eme) 
+
+notes préalables : On va bien voir ce que ça donne.
+
+notes après le premier test : Ce n'est pas glorieux. J'ai fait plusieurs tests à 5000 et 50000 générations et rien ne semble émerger de vraiment convaincant. Peut-être que plus de générations sont nécéssaires car j'ai 15 coefficients et non 8 comme avant. Peut-être aussi faut-il augmenter le nombre d'erreurs ? De plus cela fait plusieurs essais que l'on observe un comportement étonnant et malvenu, les fourmis s'amassent en carré et restent alors immobile. Je crois que j'ai une solution plus une moins idéale, je pourrais appliquer le malus de cognage contre un mur en cas de cognage contre une fourmi. Ce qui eviterai au fourmi de s'attirer autant.
+
+#########################
+
+Bon après réécriture du code on a maintenant des classes. Ces classes sont normalement plus performantes. Elles peuvent aussi gerer avec plus d'efficacité leur prise de décision. Le choix final est laissé au hasard mais le hasard est proportionnel. C'est à dire qu'une fourmi décidant d'un vecteur parfaitement droit ira dans cette direction à coup sûr. Cela devrait permettre de rendre au mieux compte du choix réel des fourmis. Après maintes corrections de bug, cette version devrait marcher mieux.
+
+#########################
+
+10eme essai :
+
+Infos données aux fourmis : nourriture, nid possédé, fourmis ennemies, fourmis alliées, distance
+
+Barème de selection : - cogner un mur/une fourmi : - 1
+                      - attrapper de la nourriture : + 50
+                      - déposer de la nourriture au nid : + 100
+
+nombre d'erreurs lors d'une reproduction : 3
+
+nombre de générations : 5000 (on n'observe que la 5000eme) 
+
+notes préalables : On va bien voir ce que ça donne.
+
+notes après le premier test : On dirait un ballet. Les fourmis vont et viennent de façon fluide en récuperant toute la nourriture très vite avant de rester vers leur nid en attente. Les résultats sont très prometteurs même avec si peu de générations. Il est temps de permettre la sauvegarde des fourmis je pense.
+
+#########################
+
+11eme essai :
+
+Infos données aux fourmis : nourriture, nid possédé, fourmis ennemies, fourmis alliées, distance
+
+Barème de selection : - cogner un mur/une fourmi : - 1
+                      - attrapper de la nourriture : + 50
+                      - déposer de la nourriture au nid : + 100
+					  - attrapper de la nourriture par contact : +10
+                      - se faire prendre de la nourriture par contact : -10
+
+nombre d'erreurs lors d'une reproduction : 3
+
+nombre de générations : 5000 (on n'observe que la 5000eme) 
+
+notes préalables : Avec la possibilité de voler de la nourriture au moindre contact, on s'attend à des stratégies un peu différentes. En tout cas pour l'instant peu de coopération prévue, il peut-être interessant d'observer à quel seuil les fourmis ont envie de coopérer.
+
+notes après le premier test : ca fonctionne bien. On obtient des résultats sympathiques et en particulier certaines stratégies comme celle de se faire voler volontairement afin de pouvoir récupérer plus rapidement de la nourriture.
+
+#########################
+
+Après une évalutation rapide des coefficients, il s'est avéré nécessaire de changer la façon dont les fourmis utilisaient leurs coeffs. Ainsi pour chaque élément du terrain, les fourmis ont désormais une courbe polynomiale du second degré. Elle l'utilise donc avec de plutôt bons résultats.
+
+#########################
+
+12eme essai :
+
+Infos données aux fourmis : nourriture, nid possédé, fourmis ennemies, fourmis alliées, distance
+
+Barème de selection : - cogner un mur/une fourmi : - 1
+                      - attrapper de la nourriture : + 50
+                      - déposer de la nourriture au nid : + 100
+					  - attrapper de la nourriture par contact : +10
+                      - se faire prendre de la nourriture par contact : -10
+
+nombre d'erreurs lors d'une reproduction : 3
+
+nombre de générations : 5000 (on n'observe que la 5000eme) 
+
+notes préalables : Normalement, le résultat devrait être meilleur.
+
+notes après le premier test : C'est effectivement très bon.
+
+#########################
+
+Ok nous allons maintenant essayer mieux. On va entrainer des fourmis dans un terrain en particulier avant de les faire compétiter sur un terrain différent.
+
+#########################
+
+Ok nous allons désormais soumettre les fourmis a des problèmes plus complexes.
+Jusque là un cerveau humain est capable d'inventer la solution seul et aucunes stratégies farfelues ne peuvent émerger devant la simplicité du problème. 
+On veux aussi montrer que les intelligences obtenues sont très spécifiques. On va donc faire deux choses : tout d'abord on va conserver des fourmis efficaces dans les situations précédentes. Ensuite on creera une nouvelle épreuve plus complexe dans laquelle nous plongerons les anciennes contre des nouvelles spécialement adaptées à ce milieu.
+
+#########################
+
+Notes générales : 
+En équipe les fourmis se comportent de façon plutôt simple. Mais le problème lui-même ne propose plus la moindre résistance à partir de 1000 générations plus ou moins. Evidemment on a besoin de raffinement pour un résultat vraiment parfait mais le fait est là : la situation proposée est trop simple pour justifier la multiplication des possibilités.
+On va tenter de s'inspirer d'Overcooked. Je pense que c'est un bon exemple de coopération. Si le problème ressemble plus à une cuisine d'overcooked alors : le problème deviendra bien plus complexe, on peut même imaginer des évenements perturbateurs qui viennent modifier le plateau indépendamment de la volonté des fourmis. La communication ou un système de cartographie absolue deviendront peut-être alors nécéssaire.
+Je propose l'usinage de la nourriture : la possibilité d'augmenter la valeur de la nourriture transportée en allant à des endroits spécifiques.
+
+Fonctionnement de la nourriture raffinée :
+  La nourriture raffinée rapporte 2 fois plus de points.
+
+Fonctionnement de l'usinage :
+  L'usine peut avoir deux états : en fonction ou au repos.
+  Une fourmi qui marche sur une usine au repos avec de la nourriture sacrifie la nourriture pour activer l'usine.
+  L'usine est en fonction un certain temps. A chaque fois qu'une fourmi se pose sur la case, celle ci active l'usine, quand l'usine est activée 5 fois : elle retourne au repos et produit une nourriture raffinée.  
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,154 @@
+/*
+0 : vide
+1 : mur
+2 : objectif
+3 : caisse
+4 : caisse sur objectif
+
+39 : droite
+37 : gauche
+40 : haut
+38 : bas
+*/
+
+var left = 37;
+var right = 39;
+var up = 40;
+var down = 38;
+var space = 32;
+
+var x = 0,y = 0;
+var newX = x, newY = y;
+var newId;
+var beforeWin = 0;
+var inMove = false;
+var map;
+
+function init() {
+	x = 11;
+	y = 8;
+	newX = x;
+	newY = y;
+	beforeWin = 0;
+	map = [
+	[1,1,1,1,1,1,1,1,1],
+	[1,1,1,1,1,0,0,0,1],
+	[1,1,1,1,1,3,0,0,1],
+	[1,1,1,1,1,0,0,3,1,1],
+	[1,1,1,0,0,3,0,3,0,1],
+	[1,1,1,0,1,0,1,1,0,1,1,1,1,1,1,1,1,1,1],
+	[1,0,0,0,1,0,1,1,0,1,1,1,1,1,0,0,2,2,1],
+	[1,0,3,0,0,3,0,0,0,0,0,0,0,0,0,0,2,2,1],
+	[1,1,1,1,1,0,1,1,1,0,1,0,1,1,0,0,2,2,1],
+	[1,1,1,1,1,0,0,0,0,0,1,1,1,1,1,1,1,1,1],
+	[1,1,1,1,1,1,1,1,1,1,1]	
+	];
+	for (var iy = 0; iy < map.length; iy ++) {
+		for (var ix = 0; ix < map[iy].length; ix ++) {
+			if (map[iy][ix] == 2) {
+				beforeWin ++;
+			}
+		}
+	}
+}
+
+function act(t) {
+	move();
+	if (beforeWin <= 0) {
+		return true;
+	}
+	if (interact()) {
+		AcceptMove();
+	}
+	return false;
+}
+
+
+function move() {
+	RessetMove();
+	if (keys[left] == 1) {
+		newX --;
+	} 
+	else if (keys[right] == 1) {
+		newX ++;
+	} 
+	else if (keys[up] == 1) {
+		newY ++;
+	} 
+	else if (keys[down] == 1) {
+		newY --;
+	} 
+	else if (keys[space] == 1) {
+		init();
+	}
+	clearKeys();
+}
+
+function canMove(id) {
+	if (id == 0 || id == 2) {
+		return true;
+	}
+	return false;
+}
+
+function AcceptMove() {
+	x = newX;
+	y = newY;
+}
+
+function RessetMove() {
+	newX = x;
+	newY = y;
+	nextY = y;
+	nextX = x;
+}
+
+
+function inMemory(y,x) {
+	if (y >= 0 && y < map.length) {
+		if (x >= 0 && x < map[y].length) {
+			return true;
+		}
+	}
+	return false;
+}
+
+function clearKeys() {
+	for (var i = 37; i < 41; i++) {
+		keys[i] = 0;
+	}
+}
+
+function interact() {
+	if (inMemory(newY,newX)){
+		var id = map[newY][newX];
+		if (canMove(id)) {
+			return true;
+		} 
+		else if (id == 3 || id == 4) {
+			var nextY = newY * 2 - y;
+			var nextX = newX * 2 - x;
+			if (inMemory(nextY,nextX)) {
+				var nextId = map[nextY][nextX];
+				if (canMove(nextId)) {
+					if (id > 3) {
+						map[newY][newX] = 2;
+						beforeWin ++;
+					} 
+					else {
+						map[newY][newX] = 0;
+					}
+					if (nextId == 2) {
+						map[nextY][nextX] = 4;
+						beforeWin --;
+					}
+					else {
+						map[nextY][nextX] = 3;
+					}
+					return true;
+				}
+			}
+		}
+	}
+	return false;
+}

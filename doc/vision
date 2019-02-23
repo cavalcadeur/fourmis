@@ -1,0 +1,6 @@
+A propos du champs de vision des fourmis.
+On constate que la grande majorité des fourmis ignore totalement la courbe de champs de vision à cause du min et du max. C'est surprenant.
+Bon on va essayer d'enlever ça pour voir si les résultats s'en ressentent.
+
+Les fourmis ne sont pas spécialement impactées dans leurs comportement.
+On note une propension assez importante à accorder plus de poids à ce qui est loin

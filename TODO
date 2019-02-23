@@ -1,0 +1,17 @@
+1.2 :
+
+- export de fourmis               DONE
+- import de fourmis
+- usinage de la nourriture
+- aléas
+   - incendies
+   - rerépartition des sources
+- vérification complète du code
+- affichage des courbes           DONE
+- raccourcis claviers             DONE
+   - recommencer le tournoi       YEP
+   - afficher les courbes         YEP
+
+1.3 :
+
+- interface graphique en CSS pour plus de lisibilité

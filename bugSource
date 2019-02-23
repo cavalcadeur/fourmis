@@ -1,0 +1,4 @@
+- J'ai changé les attributions des coefficients, c'est la version dans Fourmi.tendance qui a raison.
+      On est passé de   nourriture  ennemie  nid  nourriture.C  ennemie.C  nid.C  ballon  ballon.C
+                    à   nourriture  nourriture.C  ennemie  ennemie.C  nid  nid.C  ballon  ballon.C
+             ce qui est plus logique en somme.

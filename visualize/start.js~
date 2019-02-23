@@ -1,0 +1,138 @@
+var canvas,ctx,W,H;
+var etoiles = [];
+var keys = [];
+// gestion du plateau
+
+/*
+ Le plateau fait 15*15 cases.
+ Les nids ont les positions suivantes :
+
+ uselessBorder représente la marge de plateau qui ne sera pas utilisé mais quand même affiché pour des raisons esthétiques
+ coor représente les 8 positions des nids au départ sous la forme [x,y] ils sont placés dans le sens trigonométrique en partant du point le plus haut
+ la nourriture est stockée sous la forme [x,y,quantité]
+ fCode représente toutes les fourmis dans le tournoi et contient leur matériel génétique pour chacune
+ */
+/*
+var fourmis = [[0,1,0],[0,4,0],[0,7,0],[0,10,0],[0,13,0],[0,16,0],[0,19,0],[0,21,0]];
+var coor = [[0,1,0],[0,4,0],[0,7,0],[0,10,0],[0,13,0],[0,16,0],[0,19,0],[0,21,0]];
+var nourriture = [[20,1,1],[20,4,1],[20,7,1],[20,10,1],[20,13,1],[20,16,1],[20,19,1],[20,21,1]];
+*/
+var taillePlateau = 15;
+var uselessBorder = 0;
+var cases = 10;
+var fourmis = [[7,0,0],[3,3,0],[0,7,0],[3,11,0],[7,14,0],[11,11,0],[14,7,0],[11,3,0]];
+var coor = [[7,0,0],[3,3,0],[0,7,0],[3,11,0],[7,14,0],[11,11,0],[14,7,0],[11,3,0]];
+var nourriture = [[6,6,1],[7,6,1],[8,6,1],[6,7,1],[7,7,50],[8,7,1],[6,8,1],[7,8,1],[8,8,1]];
+var fCode = [];
+var nManche = 500;
+var actions = [];
+var nAction = 0;
+var pointsFourmis = [0,0,0,0,0,0,0,0]; // C'est là que sont stockés les points attribués à chaque fourmis
+var bareme = {"bonk":-1,"catch":50,"deliver":100};
+var nGeneration = 10;
+var error = 10;
+var myWorker;
+var evolution;
+
+var savedAnts = [];
+
+function rnd(n){
+    return Math.floor(Math.floor(Math.random()*n));
+}
+
+function start(){
+    canvas = document.querySelector("#canvas");
+    ctx = canvas.getContext("2d");
+    W = canvas.width;
+    H = canvas.height;
+    resize();
+    ctx.fillStyle = "rgb(0,0,0)";
+    ctx.fillRect(0,0,W,H);
+    /*
+     document.addEventListener(
+     "keydown",
+     function (event){
+     //touching();
+     console.log(event.keyCode);
+     //vx += (event.keyCode - 38)*10;
+     keys[event.keyCode] = 1;
+     }
+     );
+     document.addEventListener(
+     "keyup",
+     function (event){
+     //touching();
+     //console.log(event);
+     //vx += (event.keyCode - 38)*10;
+     keys[event.keyCode] = 0;
+     }
+     );
+     */
+    for (var i = 0; i < 8; i ++){
+        fourmis[i] = new Fourmi();
+        fourmis[i].getData(generateCode() , [coor[i][0],coor[i][1]] , i , 0 , 0);
+    }
+
+    window.requestAnimationFrame(draw);
+    actions = [];
+    for (var j = 0;j<8;j++){
+        actions.push("init");
+        for (var i = 0;i<nGeneration;i++){
+            actions.push("tournoi");
+            actions.push("tournoi");
+            actions.push("tournoi");
+            
+            actions.push("selection");
+        }
+        actions.push("reporting");
+    }
+    //actions.push("tournoi");
+    //actions.push("tournoiVisible");
+
+    myWorker = new Worker('worker.js');
+    myWorker.postMessage(actions);
+    myWorker.onmessage = function(e) {
+        
+        if (e.data[0] == "rapport"){
+            savedAnts.push(e.data[1][0]);
+            console.log(savedAnts);
+        }
+        else {
+            var code = e.data[0];
+            evolution = e.data[1];
+            for (var i = 0; i < 8; i ++){
+                fourmis[i] = new Fourmi();
+                fourmis[i].getData(code[i] , [coor[i][0],coor[i][1]] , i , 0 , 0);
+            }
+            
+            /*
+             // Ci dessous se cache un ensemble de fourmis déjà toute faite pour remplir des tâches simples et prévisibles dans l'optique de tester la fonction de prise de décision.
+             
+             fCode[0] = [[0,0,0,0,0],[0,0,0,0,0],[0,0,0,10,10]]; // La première fourmi est la noire. Elle sert de test et doit normalement foncer vers le mur d'indecision
+             fCode[1] = [[50,0,0,0,0],[0,0,0,0,0],[0,0,0,10,10]]; // La deuxième fourmi est la rouge. Elle doit normalement foncer vers la nourriture puis foncer vers le haut.
+             fCode[2] = [[50,0,0,0,0],[50,0,0,0,0],[0,0,0,10,10]]; // La troisième fourmi est la verte. Elle devrait aller vers la nourriture à tout prix.
+             fCode[3] = [[0,-10,0,0,0],[0,-10,0,0,0],[0,0,0,10,10]]; // La 4eme est la bleue. Elle est antisociale et devrait fuir tout contact.
+             fCode[4] = [[0,0,50,0,0],[0,0,50,0,0],[0,0,0,10,10]]; // La 5eme est la orange. Elle est casanière et veut à tout prix rester dans son nid.
+             fCode[5] = [[0,50,0,0,0],[0,50,0,0,0],[0,0,0,10,10]]; // La 6eme est la violette. Elle adore les autres fourmis et leur fonce dessus à tout prix.
+             fCode[6] = [[50,-2,0,0,0],[0,-2,50,0,0],[0,0,0,10,10]]; // La 7eme et la 8eme sont des stéréoptypes ideaux. Elles vont de la nourriture à leur nid en évitant légerement les autres fourmis.
+             fCode[7] = [[50,-2,0,0,0],[0,-2,50,0,0],[0,0,0,10,10]]; // Elles obtiennent d'ailleurs les scores les plus élevés avec des scores allant de 900 à 2000
+             */
+            console.log("Message reçu 5 sur 5 !");
+            tournoi(true,fourmis);
+        }
+    };
+}
+
+function resize(){
+    // ici on redimensionne les canvas à la taille de la fenêtre
+    W = window.innerWidth;
+    H = window.innerHeight;
+    canvas.setAttribute("width",W);
+    canvas.setAttribute("height",H);
+
+    //ici on calcule la taille en pixels des cases et le uselessBorder
+    cases = Math.min(W,H)/taillePlateau;
+    uselessBorder = Math.floor((Math.max(W,H)/cases - taillePlateau)/2);
+    if (W > H) uselessBorder = [uselessBorder,0];
+    else uselessBorder = [0,uselessBorder];
+}
