@@ -37,12 +37,12 @@ let places = [{taille:15,
                usine:[],
                members:5},
               {taille:15,
-               fourmis:[[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]],        // 4 Cette map est destinée à des vagues de tailles 1 pour 1 à 5 fourmis par équipe.
-               coor:[[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]],
-               nourriture:[[14,14,10],[13,14,10],[14,13,10],[13,13,10],[0,14,10],[14,0,10]],
+               fourmis:[[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]],        // 4 Cette map est destinée à des vagues de tailles 1 pour 1 à 5 fourmis par équipe.
+               coor:[[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]],
+               nourriture:[[14,14,2],[13,14,2],[14,13,2],[13,13,2],[8,10,2],[10,8,2],[6,14,2],[14,6,2],[7,7,2],[5,5,1],[9,9,2],[11,11,2],[1,13,2],[10,3,2],[0,14,2],[14,0,2]],
                nourrRaf:[],
                ballon:[7,7,0,0],
-               team:8,
+               team:16,
                usine:[],
                members:5},
               {taille:9,
@@ -66,18 +66,18 @@ let places = [{taille:15,
               {taille:15,
                fourmis:[[0,0,0]],        // 7 Carte avec placement aléatoire.
                coor:[[0,0,0]],
-               nourriture:[[2,2,1],[15,15,30],3,11],
+               nourriture:[[2,2,1],[15,15,30],39,46],
                nourrRaf:[],
                ballon:[2,2,15,15],
                team:16,
-               usine:[[2,2,0],[15,15,0],0,3],
+               usine:[[2,2,0],[15,15,0],0,0],
                members:5,
                random:true}
              ];
 let placeId = 7;
 let waveSize = 1;
 let panelTot = 1;
-let echantillon = 7;
+let echantillon = 10;
 
 let taillePlateau = places[placeId].taille;
 let uselessBorder = 0;
@@ -137,6 +137,21 @@ function initTerrain(id){
         usine = copy(places[id].usine);
         ballon = copy(places[id].ballon);
     }
+    let newNou = [];
+    for (let y = 0; y < taillePlateau; y ++){
+        newNou[y] = [];
+        for (let x = 0; x < taillePlateau; x ++){
+            newNou[y][x] = [0,false];
+            nourriture.forEach(
+                function(e){
+                    if (e[0] == x && e[1] == y){
+                        newNou[y][x][0] = e[2];
+                    }
+                }
+            );
+        }   
+    }
+    nourriture = copy(newNou);
 }
 
 initTerrain(placeId);
@@ -146,9 +161,9 @@ let nManche = 200;
 let actions = [];
 let nAction = 0;
 let pointsFourmis = [0,0,0,0,0,0,0,0]; // C'est là que sont stockés les points attribués à chaque fourmis En fait non !
-let bareme = {"bonk":-1,"catch":20,"deliver":100,"vol":-100,"takeBonk":2,"dropBonk":0,ballon:0,giveFactory:50,deliverR:500};
-let nGeneration = 5000;
-let error = 7;
+let bareme = {"bonk":-1,"catch":20,"deliver":100,"vol":-100,"takeBonk":2,"dropBonk":-2,ballon:0,giveFactory:50,deliverR:500};
+let nGeneration = 50000;
+let error = 40;
 
 let savedData = [];
 let thingsSaved = ["",""];
@@ -199,15 +214,21 @@ function preselect(initState){
 }
 
 function generateCode(){
-    // Les codes de fourmis sont sous la forme : element -> fonction
-    // type étant dans l'ordre : ennemie nourriture  nid  ballon  nourriture+  usineRepos  usineActive donc on a besoin de 14 fonctions.
-    var result = [];
-    for (var memb = 0;memb < membN;memb++){
+    // Les codes de fourmis sont sous la forme : y -> x -> elem -> attraction
+    // elem étant dans l'ordre : nourriture  fourmi  nid  pheromone  vide
+    let result = [];
+    for (let memb = 0;memb < membN;memb++){
         result[memb] = [];
-        for (var etat = 0;etat < 14;etat++){
-            result[memb][etat] = [];
-            for (var type = 0; type < 5; type ++){
-                result[memb][etat][type] = rnd(100)-50;
+        for (let y = 0;y < 5;y++){
+            result[memb][y] = [];
+            for (let x = 0;x < 5;x++){
+                result[memb][y][x] = [];
+                for (let elem = 0;elem < 5;elem++){
+                    result[memb][y][x][elem] = [];
+                    for (let action = 0;action < 10;action++){
+                        result[memb][y][x][elem][action] = rnd(500);
+                    }
+                }
             }
         }
     }
@@ -228,7 +249,7 @@ function tournoi(graph,fourmis){ // Si graph == True alors on dessine tout pour 
         }
         //On n'oublie pas non plus de remettre les stocks de nourriture en place
         initTerrain(placeId);
-        
+
         if (graph){
             if (groupe != 0) return; // On ne se fatigue pas et on ne s'occupe de dessiner que la première vague tout simplement.
             var mancheRestante = nManche;
@@ -449,34 +470,28 @@ function selection(){
 
 const Fourmi = function(){
     let position = [0,0];
-    let code = [[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,10,10],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,10,10],[0,0,0,0,0],[0,0,0,0,0]];
+    let code = [];
     let n = 0;
     let carry = 0;
     let points = 0;
 };
-
-Fourmi.prototype.fonctionVision = function(n,code){
-    var r = code[0] * n * n + code[1] * n + code[2];
-    //var r = code[1] * n + code[2];
-    r = Math.min(r,code[3]);
-    r = Math.max(r,code[4]);
-    return r;
-};
-Fourmi.prototype.calculVect = function(A,B,D){
-    //console.log(D);
-    var norme = Math.abs(A[0]) + Math.abs(A[1]);
-    if (norme != 0){
-        A[0] /= norme;
-        A[1] /= norme;
-    }
-    norme = this.fonctionVision(norme,D);
-    B[0] += A[0] * norme;
-    B[1] += A[1] * norme;
-    return B;
-};
 Fourmi.prototype.getData = function(codeN,positionN,nN,carryN,pointsN){
     // Cette fonction initialise les données internes de la fonction.
-    if (codeN == undefined) codeN = [[50,-2,0,0,0],[0,-2,50,0,0],[0,0,0,10,10],[0,0,0,10,10],[0,0,0,10,10],[0,0,0,10,10],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,10,10],[0,0,0,0,0],[0,0,0,0,0]];
+    if (codeN == undefined) {
+        codeN = [];
+        for (let y = 0;y < 5;y++){
+            codeN[y] = [];
+            for (let x = 0;x < 5;x++){
+                codeN[y][x] = [];
+                for (let elem = 0;elem < 5;elem++){
+                    codeN[y][x][elem] = [];
+                    for (let action = 0;action < 10;action++){
+                        codeN[y][x][elem][action] = 0;
+                    }
+                }
+            }
+        }
+    }
     this.code = codeN;
     if (positionN == undefined) positionN = [0,0];
     if (nN == undefined) {nN = 0; console.log("On m'a passé un n undefined ! Gros débile !");}
@@ -519,94 +534,56 @@ Fourmi.prototype.addPoints = function(n){
 Fourmi.prototype.tendance = function(fourmis,nourriture,coor,ball){
     // Cette fonction a besoin de la liste de toutes les fourmis, de la liste des positions de la nourriture, et les coordonnées des nids.
     // La fourmi n veut faire un choix de direction qui se traduira par un nombre entre 0 et 3  4 si elle ne veut aller nulle part.
-    // D'abord chaque objet va lui envoyer un signal sous la forme d'un vecteur dans sa direction
-    // On ajoute ce vecteur au vecteur final de la fourmi qui indiquera au final la direction qu'elle veut le plus prendre
-    let cc = this.carry; // 0 si la fourmi ne transporte rien 1 sinon
-    let result = [[0,0],[0,0],[0,0],[0,0]]; // liste resultat
-    let vecteurFinal = [0,0];
-
-    for (let j = bornI;j < bornS;j ++){
-        let liste = fourmis[j].getListe();
-        for (let i = 0;i < liste.length;i++){
-            let vecteursA = [liste[i].getX() - this.position[0],liste[i].getY() - this.position[1]];
-            vecteurFinal = this.calculVect(vecteursA,vecteurFinal,this.code[0 + cc]);
+    // On regarde chaque case dans les 25 entourant la fourmi en carré.
+    let cc = this.carry * 5; // 0 si la fourmi ne transporte rien 5 sinon
+    let final = [0,0,0,0,0]; // une valeur par direction plus une pour les pheromones
+    let taille = nourriture.length;
+    let bornes = [Math.max(0,this.position[1] - 2),Math.min(taille,this.position[1] + 3),Math.max(0,this.position[0] - 2),Math.min(taille,this.position[0] + 3)];
+    let minXY = [this.position[1] - 2,this.position[0] - 2];
+    let type,fourm,coco;
+    
+    for (let y = bornes[0]; y < bornes[1]; y ++){
+        for (let x = bornes[2]; x < bornes[3]; x ++){
+            type = 4;
+            coco = this.code[y - minXY[0]][x - minXY[1]];
+            fourm = nourriture[y][x][1];
+            if (nourriture[y][x][0] > 0 ) type = 0;
+            else type = 3;
+            
+            for (let i = 0; i < 5; i ++){
+                final[i] += coco[type][i + cc];
+                if (fourm) final[i] += coco[1][i + cc];
+                if (coor[this.n][0] == x && coor[this.n][1] == y){
+                    final[i] += coco[2][i + cc];
+                }
+            }
+            
         }
     }
 
-    for (let i = 0; i < nourriture.length; i ++){
-        let vecteursA = [nourriture[i][0] - this.position[0],nourriture[i][1] - this.position[1]];
-        vecteurFinal = this.calculVect(vecteursA,vecteurFinal,this.code[2 + cc]);
-    }
-
-    for (let i = 0; i < nourrRaf.length; i ++){
-        let vecteursA = [nourrRaf[i][0] - this.position[0],nourrRaf[i][1] - this.position[1]];
-        vecteurFinal = this.calculVect(vecteursA,vecteurFinal,this.code[8 + cc]);
-    }
-
-    // Calcul du vecteur pour le nid
-
-    let vecteursA = [coor[this.n][0] - this.position[0],coor[this.n][1] - this.position[1]];
-    vecteurFinal = this.calculVect(vecteursA,vecteurFinal,this.code[4 + cc]);
-
-    // Calcul du vecteur pour le ballon
-
-    vecteursA = [ball[0] - this.position[0],ball[1] - this.position[1]];
-    vecteurFinal = this.calculVect(vecteursA,vecteurFinal,this.code[6 + cc]);
-
-    // Calcul du vecteur pour les usines
-
-    for (let i = 0; i < usine.length; i ++){
-        let vecteursA = [usine[i][0] - this.position[0],usine[i][1] - this.position[1]];
-        let nnn = 12 + cc;
-        if (usine[i][2] == 0) nnn = 10 + cc;
-        vecteurFinal = this.calculVect(vecteursA,vecteurFinal,this.code[nnn]);
-    }
-
-    return vecteurFinal;
+    return final;
 };
 Fourmi.prototype.chooseDirection = function(fourmis,nourriture,coor,ball){
     // Cette fonction détermine la direction à prendre à partir de la tendance renvoyée par la fonction interne tendance.
 
-    var final = this.tendance(fourmis,nourriture,coor,ball);
+    let final = this.tendance(fourmis,nourriture,coor,ball);
 
     // Voici la méthode : on prend le vecteur et ça nous donne une probabilité pour les deux directions x et y
-    var total = Math.abs(final[0]) + Math.abs(final[1]);
-    if (total == 0) return 4;
-    var hasard = rnd(total);
-    if (hasard < Math.abs(final[0])) {
-        if (final[0] > 0) return 1;
-        else return 3;
+    let max = 0;
+    //let total = final[0] + final[1] + final[2] + final[3] + final[4];
+    //let hasard = rnd(total);
+    //total = 0;
+    for (let i = 1; i < 5; i ++){
+        if (final[max] < final[i]) max = i;
     }
-    else {
-        if (final[1] > 0) return 2;
-        else return 0;
-    }
-
-    /*
-     if (Math.abs(final[0]) > Math.abs(final[1])){
-     if (final[0] > 0) return 1;
-     else return 3;
-     }
-     else {                                                  // Methode un peu pourrie si vous voulez mon avis
-     if (final[1] > 0) return 2;
-     else if (final[1] < 0) return 0;
-     else return 4;
-     }
-     */
-
+    return max;
 };
 Fourmi.prototype.copy = function(erreurs){ // Cette fonction retourne une copie du code de la fourmi avec un certain nombre d'erreurs !
-    var result = [];
-    for (var etat = 0;etat < 14;etat++){
-        result[etat] = [];
-        for (var type = 0; type < 5; type ++){
-            result[etat][type] = this.code[etat][type];
-        }
-    }
+    let result = JSON.parse(JSON.stringify(this.code));
 
     // On effectue des erreurs mineures !
-    for (var i = 0; i < erreurs;i++){
-        result[rnd(8)][rnd(5)] += rnd(21) - 10;
+    for (let i = 0; i < erreurs;i++){
+        result[rnd(5)][rnd(5)][rnd(5)][rnd(10)] = rnd(500);
     }
     return result;
 };
@@ -617,10 +594,16 @@ Fourmi.prototype.yourTurn = function(that,bareme,nourriture,coor,fourmis,ball){
 };
 Fourmi.prototype.move = function(that,dir,bareme,nourriture,coor,ball){
     // La fourmi avance dans la direction dir ou ne fait rien si dir == 4
-    if (dir == 4) return true;
     let coors = [];
     coors[0] = this.position[0];
     coors[1] = this.position[1];
+
+    if (dir == 4) {
+        if (nourriture[coors[1]][coors[0]][0] == -1) nourriture[coors[1]][coors[0]][0] = 0;
+        else nourriture[coors[1]][coors[0]][0] = -1;
+        return true;
+    }
+    nourriture[coors[1]][coors[0]][1] = false;
     const vecteurs = [[0,-1],[1,0],[0,1],[-1,0]];
     coors[0] += vecteurs[dir][0];
     coors[1] += vecteurs[dir][1];
@@ -674,20 +657,12 @@ Fourmi.prototype.move = function(that,dir,bareme,nourriture,coor,ball){
     bonk = 0;
 
     if (that.carry == 0){
-        let kill = -1;
-        nourriture.forEach(
-            function(e,i){
-                if (e[0] == coors[0] && e[1] == coors[1]){
-                    bonk = 1;
-                    e[2] -= 1;
-                    if (e[2] <= 0) kill = i;
-                }
-            }
-        );
-        if (kill != -1) nourriture.splice(kill,1);
+        if (nourriture[coors[1]][coors[0]][0] > 0){
+            nourriture[coors[1]][coors[0]][0] -= 1;
+            bonk = 1;
+        }
 
-        
-        kill = -1;
+        let kill = -1;
         nourrRaf.forEach(
             function(e,i){
                 if (e[0] == coors[0] && e[1] == coors[1]){
@@ -698,7 +673,7 @@ Fourmi.prototype.move = function(that,dir,bareme,nourriture,coor,ball){
             }
         );
         if (kill != -1) nourrRaf.splice(kill,1);
-         
+
     }
 
     if (bonk == 1) {
@@ -720,19 +695,8 @@ Fourmi.prototype.move = function(that,dir,bareme,nourriture,coor,ball){
     }
 
     // Partie usine !
-    for (let i = 0; i < usine.length;i++){
-        if (usine[i][0] == coors[0] && usine[i][1] == coors[1]) { // La fourmi est sur une usine.
-            if (usine[i][2] == 0 && this.carry == 1 && this.potential != bareme.deliverR){
-                this.carry = 0;
-                usine[i][2] = 5;
-                this.points += bareme.giveFactory;
-            }
-            else{     // On considère que la fourmi transportant de la nourriture peut travailler à l'usine... Parce que pourquoi pas.
-                if (usine[i][2] == 1) addFoodR(coors[0],coors[1],1);
-                usine[i][2] = Math.max(usine[i][2] - 1,0);
-            }
-        }
-    }
+    
+    nourriture[this.position[1]][this.position[0]][1] = true;
 
 };
 
@@ -746,28 +710,30 @@ Fourmi.prototype.getInteretBall = function(){
     return result;
 };
 Fourmi.prototype.getCodeResume = function(){
-    let norme = [];
-    let middle = taillePlateau/2;
-    for (let i = 0; i < this.code.length; i++){
-        norme[i*2] = 0;
-        norme[i*2 + 1] = 0;
-        for (let j = 0; j < middle; j ++){
-            norme[i*2] += this.fonctionVision(j,this.code[i]) * (middle - j);
-        }
-        for (let j = Math.floor(middle); j < taillePlateau; j ++){
-            norme[i*2+1] += this.fonctionVision(j,this.code[i]) * (j - middle + 1);
-        }
-    }
-    let range = minMax(norme); 
-    range[1] = range[1] / 3;
-    range[3] = range[3] / 3;
-    let modif = 1;
-    for (let i = 0; i < norme.length; i ++){
-        if (norme[i] >= 0) modif = 1;
-        else modif = -1;
-        norme[i] = Math.floor(Math.abs(norme[i]) / range[1 + 2*Math.floor((i%4)/2)]) * modif;
-    }
-    return norme;
+    /*
+      let norme = [];
+      let middle = taillePlateau/2;
+      for (let i = 0; i < this.code.length; i++){
+      norme[i*2] = 0;
+      norme[i*2 + 1] = 0;
+      for (let j = 0; j < middle; j ++){
+      norme[i*2] += this.fonctionVision(j,this.code[i]) * (middle - j);
+      }
+      for (let j = Math.floor(middle); j < taillePlateau; j ++){
+      norme[i*2+1] += this.fonctionVision(j,this.code[i]) * (j - middle + 1);
+      }
+      }
+      let range = minMax(norme);
+      range[1] = range[1] / 3;
+      range[3] = range[3] / 3;
+      let modif = 1;
+      for (let i = 0; i < norme.length; i ++){
+      if (norme[i] >= 0) modif = 1;
+      else modif = -1;
+      norme[i] = Math.floor(Math.abs(norme[i]) / range[1 + 2*Math.floor((i%4)/2)]) * modif;
+      }
+      return norme;
+    */
 };
 
 function minMax(liste){
@@ -783,20 +749,11 @@ function minMax(liste){
 
 function addFood(x,y,n){
     // Cette fonction ajoute de la nourriture sur la case de coordonnées x,y
-    if (n == undefined) n = 1;
-    nourriture.forEach(
-        function(e,i){
-            if (e[0] == x && e[1] == y){
-                nourriture[i][2] += n;
-                return;
-            }
-        }
-    );
-    nourriture.push([x,y,n]);
+    nourriture[y][x][0] += n;
 }
 
 function addFoodR(x,y,n){
-    // Cette fonction ajoute de la nourriture sur la case de coordonnées x,y
+    // Cette fonction ajoute de la nourriture raffinée sur la case de coordonnées x,y
     if (n == undefined) n = 1;
     nourrRaf.forEach(
         function(e,i){
@@ -888,13 +845,13 @@ Team.prototype.getInteretBall = function(){
 };
 
 /*                                      // Juste un test des classes prototypées pour être sûr de leur efficacité.
- const FFXIV = function(){};
+                                        const FFXIV = function(){};
 
- FFXIV.prototype.sayHello = function(){
- console.log("Hello !");
- };
+                                        FFXIV.prototype.sayHello = function(){
+                                        console.log("Hello !");
+                                        };
 
- const aRealmReborn = new FFXIV ();
+                                        const aRealmReborn = new FFXIV ();
 
- aRealmReborn.sayHello();
- */
+                                        aRealmReborn.sayHello();
+*/

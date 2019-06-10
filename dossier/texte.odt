@@ -1,0 +1,22 @@
+﻿DOT :
+
+[1] [Janvier 2018 : découverte de la thèse de M. Cerf et du concept de recuit simulé et donc apprentissage de l’importance du cross-over]
+
+[2] [Avril 2018 : premier programme fonctionnel de fourmi. Une opposition simple entre 8 individus. Les résultats ne sont pas probants.]
+
+[3] [Juin 2018 : implémentation des équipes. Mais le programme ne marche plus.]
+
+[4] [Septembre 2018 : les équipes sont enfin fonctionnelles ce qui permet de prendre des mesures à nouveau.]
+
+[5] [Mars 2019 : mis en place d’un affichage synthétique et graphique qui facilite l’analyse des données observées.]
+
+[6] [Avril 2019 : création d’un modèle théorique utilisant les outils mathématiques sur les probabilités. Les premiers essais sont infructueux mais le dernier modèle est cohérent avec la simulation informatique.]
+
+
+
+Le problème posé :
+	L’objectif du TIPE est de répondre à cette question : quelles instructions donner à une équipe de travailleurs ou de robots pour leur permettre de résoudre un problème de logistique ? On imagine donc l’épreuve suivante : une équipe de travailleurs que l’on appelle fourmis est placée sur un quadrillage. Les fourmis ont uniquement la possibilité de se déplacer, une fois par tour, dans 4 directions possibles : haut, bas, droite, gauche. Les fourmis ne peuvent connaître que la direction et la distance de chaque objet du quadrillage. Les fourmis ont pour tâche de se déplacer jusqu’à des sources de nourriture et d’ensuite ramener leur butin sur leur nid. 
+	Établir une stratégie gagnante est facile à faire pour un être humain. Il suffit en effet aux fourmis d’avancer en direction de la nourriture jusqu’à l’obtenir puis de revenir. Cependant, on aimerait ici obtenir des résultats plus originaux pouvant répondre à des problèmes secondaires : comment faire pour coordonner une équipe entière sans que les fourmis ne se gênent ? Comment gérer, toujours à l’aide d’instructions simples, des fourmis qui n’ont qu’un champ de vision restreint ? Existe-t-il des stratégies non intuitives mais aussi efficaces voir plus que les algorithmes classiques ?
+	Pour répondre à ces questions on utilise une méthode d’algorithme génétique. On mettra en compétition différentes équipes, chacune avec ses propres comportements tirés aux hasard. On sélectionne alors les meilleures équipes qui obtiennent le droit d’avoir une descendance. La descendance adopte les mêmes comportements à quelques différences près. C’est le même principe que la sélection naturelle. 
+	Bien entendu, le premier problème à régler est la création d’un code génétique propre à chaque fourmi et qui déterminera son comportement une fois sur le quadrillage. 
+
