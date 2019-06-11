@@ -12,36 +12,6 @@ var keys = [];
  la nourriture est stockée sous la forme [x,y,quantité]
  fCode représente toutes les fourmis dans le tournoi et contient leur matériel génétique pour chacune
  */
-/*
-var fourmis = [[0,1,0],[0,4,0],[0,7,0],[0,10,0],[0,13,0],[0,16,0],[0,19,0],[0,21,0]];
-var coor = [[0,1,0],[0,4,0],[0,7,0],[0,10,0],[0,13,0],[0,16,0],[0,19,0],[0,21,0]];
-var nourriture = [[20,1,1],[20,4,1],[20,7,1],[20,10,1],[20,13,1],[20,16,1],[20,19,1],[20,21,1]];
- */
-/*
-let places = [{taille:15,
-               fourmis:[[7,0,0],[3,3,0],[0,7,0],[3,11,0],[7,14,0],[11,11,0],[14,7,0],[11,3,0]],
-               coor:[[7,0,0],[3,3,0],[0,7,0],[3,11,0],[7,14,0],[11,11,0],[14,7,0],[11,3,0]],
-               nourriture:[[6,6,1],[7,6,1],[8,6,1],[6,7,1],[7,7,50],[8,7,1],[6,8,1],[7,8,1],[8,8,1]]},
-              {taille:40,
-               fourmis:[[7,0,0],[3,3,0],[0,7,0],[3,11,0],[7,14,0],[11,11,0],[14,7,0],[11,3,0]],
-               coor:[[7,0,0],[3,3,0],[0,7,0],[3,11,0],[7,14,0],[11,11,0],[14,7,0],[11,3,0]],
-               nourriture:[[36,36,1],[37,36,1],[38,36,1],[36,37,1],[37,37,50],[38,37,1],[36,38,1],[37,38,1],[38,38,1]]}];
-var placeId = 1;
-var taillePlateau = places[placeId].taille;
-var uselessBorder = 0;
-var cases = 10;
-var fourmis = places[placeId].fourmis;
-var coor = places[placeId].coor;
-var nourriture = places[placeId].nourriture;
-var fCode = [];
-var nManche = 500;
-var actions = [];
-var nAction = 0;
-var pointsFourmis = [0,0,0,0,0,0,0,0]; // C'est là que sont stockés les points attribués à chaque fourmis
-var bareme = {"bonk":-1,"catch":50,"deliver":100};
-var nGeneration = 10;
-var error = 10;
- */
 let vitesseAffichage = 1;
 let mouse = [0,0];
 var myWorker;
@@ -62,6 +32,7 @@ function rnd(n){
 }
 
 function start(){
+    // Première fonction appellée. Sert à l'initialisation de la fenêtre
     canvas = document.querySelector("#canvas");
     ctx = canvas.getContext("2d");
     W = canvas.width;
@@ -94,6 +65,7 @@ function start(){
     }
 
     window.requestAnimationFrame(draw);
+    // A partir de là on crée la liste d'instruction que doit executer le worker. Le worker fait ça en arrière plan. On doit prévoir à l'avance toutes ses actions.
     actions = [];
     for (var j = 0;j<panelTot;j++){
         actions.push("init");
@@ -118,8 +90,11 @@ function start(){
     actions.push("drawMatch");
     actions.push("takeBackInput");
 
+    // Partie où on donne les instructions au worker
     myWorker = new Worker('worker.js');
     myWorker.postMessage(actions);
+
+    // Partie où l'on reçoit les résultats du worker
     myWorker.onmessage = function(e) {
         console.log(e.data[0]);
         if (e.data[0] == "rapport"){
@@ -183,6 +158,7 @@ function resize(){
 }
 
 function touching(key){
+    // Ici on gère les touches du clavier
     if (key == 83) saveAs();
     else if (key == 68) {
         modeStaline = modeStaline != true;

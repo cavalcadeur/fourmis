@@ -1,5 +1,6 @@
 // fichier du worker
 
+// Initialisation des variables utiles
 let places = [{taille:15,
                fourmis:[[7,0,0],[3,3,0],[0,7,0],[3,11,0],[7,14,0],[11,11,0],[14,7,0],[11,3,0],[7,0,0],[3,3,0],[0,7,0],[3,11,0],[7,14,0],[11,11,0],[14,7,0],[11,3,0]],
                coor:[[7,0,0],[3,3,0],[0,7,0],[3,11,0],[7,14,0],[11,11,0],[14,7,0],[11,3,0],[7,0,0],[3,3,0],[0,7,0],[3,11,0],[7,14,0],[11,11,0],[14,7,0],[11,3,0]],
@@ -79,27 +80,28 @@ let waveSize = 1;
 let panelTot = 1;
 let echantillon = 7;
 
+function copy(a){
+    return JSON.parse(JSON.stringify(a));
+}
+
 let taillePlateau = places[placeId].taille;
 let uselessBorder = 0;
 let cases = 10;
-let fourmis = JSON.parse(JSON.stringify(places[placeId].fourmis));
-let coor = JSON.parse(JSON.stringify(places[placeId].coor));
-let nourriture = JSON.parse(JSON.stringify(places[placeId].nourriture));
-let nourrRaf = JSON.parse(JSON.stringify(places[placeId].nourrRaf));
-let usine = JSON.parse(JSON.stringify(places[placeId].usine));
-let ballon = JSON.parse(JSON.stringify(places[placeId].ballon));
+let fourmis = copy(places[placeId].fourmis);
+let coor = copy(places[placeId].coor);
+let nourriture = copy(places[placeId].nourriture);
+let nourrRaf = copy(places[placeId].nourrRaf);
+let usine = copy(places[placeId].usine);
+let ballon = copy(places[placeId].ballon);
 let teamN = places[placeId].team;
 let membN = places[placeId].members;
 let bornI = 0;
 let bornS = 0;
 
-function copy(a){
-    return JSON.parse(JSON.stringify(a));
-}
 
 function initTerrain(id){
     if (places[id].random){
-
+        // Cette partie est destinée à la création des cartes générées aléatoirement.
         coor = [];
         for(let i = 0; i < places[id].team;i ++){
             coor[i] = copy(places[id].coor[0]);
@@ -131,6 +133,7 @@ function initTerrain(id){
         ballon = [valuesL[0] + rnd(valuesL[2] - valuesL[0]),valuesL[1] + rnd(valuesL[3] - valuesL[1])];
     }
     else{
+        // Cette partie remets en place la carte dans l'état enregistré dans places.
         coor = copy(places[id].coor);
         nourriture = copy(places[id].nourriture);
         nourrRaf = copy(places[id].nourrRaf);
@@ -142,55 +145,39 @@ function initTerrain(id){
 initTerrain(placeId);
 
 let fCode = [];
-let nManche = 200;
+let nManche = 200; // Ici on décide du nombre de manche par tour.
 let actions = [];
 let nAction = 0;
-let pointsFourmis = [0,0,0,0,0,0,0,0]; // C'est là que sont stockés les points attribués à chaque fourmis En fait non !
-let bareme = {"bonk":-1,"catch":20,"deliver":100,"vol":-100,"takeBonk":2,"dropBonk":0,ballon:0,giveFactory:50,deliverR:500};
-let nGeneration = 5000;
-let error = 7;
+let pointsFourmis = [0,0,0,0,0,0,0,0];
+let bareme = {"bonk":-1,"catch":20,"deliver":100,"vol":-100,"takeBonk":2,"dropBonk":0,ballon:0,giveFactory:50,deliverR:500}; // Ici on mets les paramètres de notation.
+let nGeneration = 5000; // Ici on décide du nombre de générations qui auront lieu.
+let error = 7;  // Ici on décide du nombre du nombre d'erreur lors des copies.
 
 let savedData = [];
 let thingsSaved = ["",""];
 
-onmessage = function(e){
-    actions = e.data;
-    whatDoIDoNow();
+onmessage = function(e){ // C'est la fonction qui est appelée quand la page a fini de s'initialiser. 
+    actions = e.data;    // e.data contient la liste de toutes les actions à effectuer. Elle provient du fichier start.js.
+    whatDoIDoNow();  
 };
 
 function rnd(n){
-    return Math.floor(Math.floor(Math.random()*n));
-}
-
-function defaultInit(){ // [fourmis,nourriture,nid , fourmis/carry,nourriture/carry,nid/carry , ballon, ballon/carry]
-    var fCode = [];
-    fCode[0] = [[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0]]; // La première fourmi est la noire. Elle sert de test et doit normalement foncer vers le mur d'indecision
-    fCode[1] = [[0,0,0,0,0],[0,0,0,10,10],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0]]; // La deuxième fourmi est la rouge. Elle doit normalement foncer vers la nourriture puis foncer vers le haut.
-    fCode[2] = [[0,0,0,0,0],[0,0,0,10,10],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,10,10],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0]]; // La troisième fourmi est la verte. Elle devrait aller vers la nourriture à tout prix.
-    fCode[3] = [[0,0,0,-10,-10],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,-10,-10],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0]]; // La 4eme est la bleue. Elle est antisociale et devrait fuir tout contact.
-    fCode[4] = [[0,0,0,0,0],[0,0,0,0,0],[0,0,0,10,10],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,10,10],[0,0,0,0,0],[0,0,0,0,0]]; // La 5eme est la orange. Elle est casanière et veut à tout prix rester dans son nid.
-    fCode[5] = [[0,0,0,10,10],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,10,10],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0]]; // La 6eme est la violette. Elle adore les autres fourmis et leur fonce dessus à tout prix.
-    fCode[6] = [[0,0,0,-1,-1],[0,0,0,10,10],[0,0,0,0,0],[0,0,0,-1,-1],[0,0,0,0,0],[0,0,0,10,10],[0,0,0,0,0],[0,0,0,0,0]]; // La 7eme et la 8eme sont des stéréoptypes ideaux. Elles vont de la nourriture à leur nid en évitant légerement les autres fourmis.
-    fCode[7] = [[0,0,0,-1,-1],[0,0,0,10,10],[0,0,0,0,0],[0,0,0,-1,-1],[0,0,0,0,0],[0,0,0,10,10],[0,0,0,0,0],[0,0,0,0,0]]; // Elles obtiennent d'ailleurs les scores les plus élevés avec des scores allant de 900 à 2000
-    for (var i = 0; i < 8; i ++){
-        fourmis[i] = new Fourmi();
-        fourmis[i].getData(fCode[i] , [coor[i][0],coor[i][1]] , i , 0 , 0); // A REPARER POUR COLLER AVEC TEAM
-    }
+    return Math.floor(Math.random()*n);
 }
 
 function init(){
-    // initialise avant de commencer les tournois
+    // initialise avant de commencer les tournois, crée des fourmis aux codes aléatoires pour composer la première génération.
     fourmis = [];
     for (var i = 0; i < teamN; i ++){
         fourmis[i] = new Team();
         fourmis[i].init(membN,i);
         fourmis[i].getData(generateCode() , [coor[i][0],coor[i][1]] , 0);
     }
-    //whatDoIDoNow();
 }
 
 function preselect(initState){
     // Ici le worker se met à jour avec les données que lui passe la fonction start()
+    // C'est utile notamment pour charger des fichiers préalablement enregistrés sur l'ordinateur.
     for (var i = 0;i < teamN;i++){
         fourmis[i] = new Team();
         fourmis[i].init(membN,i);
@@ -216,12 +203,10 @@ function generateCode(){
 
 function tournoi(graph,fourmis){ // Si graph == True alors on dessine tout pour le spectateur sinon non !
 
-    // On initialise le terrain avant le tournoi.
-    // On n'oublie pas de remettre les fourmis à leur position initial
     for (let groupe = 0;groupe < teamN; groupe += waveSize){
         bornI = groupe;
         bornS = groupe + waveSize;
-        for (let id = bornI;id < bornS;id ++){
+        for (let id = bornI;id < bornS;id ++){  // On remets les fourmis sur leur nid respectif.
             fourmis[id].goToNest(places[placeId].fourmis);
             fourmis[id].looseCarry();
             fourmis[id].initPts();
@@ -245,7 +230,7 @@ function tournoi(graph,fourmis){ // Si graph == True alors on dessine tout pour 
                         }
                         moveBall(); // On n'oublie pas de faire bouger le ballon après toutes les fourmis.
                     }
-                    draw(fourmis);
+                    draw(fourmis); // Ici on fait appelle à la fonction contenue dans draw.js qui ne sert qu'à afficher la partie.
                     if (vitesseAffichage) mancheRestante -= 1;
                     slow = slowNumber;
                 }
@@ -263,7 +248,7 @@ function tournoi(graph,fourmis){ // Si graph == True alors on dessine tout pour 
             window.requestAnimationFrame(manche);
         }
         else {
-
+            // Ici c'est la partie sans affichage. Elle est bien plus simple et est utile pour faire des calculs sans fatiguer le processeur.
             for(var i = 0;i < nManche;i++){
                 for (let id = bornI;id < bornS;id ++){
                     fourmis[id].yourTurn(bareme,nourriture,coor,fourmis,ballon);
@@ -276,7 +261,7 @@ function tournoi(graph,fourmis){ // Si graph == True alors on dessine tout pour 
 }
 
 function moveBall(){
-    // Fonction qui s'occupe de faire agir le ballon.
+    // Fonction qui s'occupe de faire agir le ballon. Le ballon est un test infructueux. Les fourmis l'ignorent royalement.
     ballon[4] = ballon[0];
     ballon[5] = ballon[1]; // On stocke en 4 et 5 la position dans laquelle veux aller le ballon.
     if (ballon[2] != 0){
@@ -324,7 +309,7 @@ function moveBall(){
     ballon[1] = ballon[5];
 }
 
-function whatDoIDoNow(){
+function whatDoIDoNow(){  // C'est la grosse boucle qui exécute chaque action une par une.
     for(let iAct = 0;iAct<actions.length;iAct++){
         if (actions[iAct] == "init") init();
         else if (actions[iAct] == "takeBackInput") postMessage(["I'm done !"]);
@@ -428,7 +413,7 @@ function selection(){
         newFourmis[i] = generateCode(teamN);
     }
 
-    // On a notre nouvelle liste de Fourmis ! Il faut maintenant les mélanger.
+    // On a notre nouvelle liste de Fourmis ! Avant on les mélangeait pour qu'elles ne soient pas avantagée par leur position de départ mais maintenant tout est parfaitement symétrique.
     let liste = [];
     for (let i = 0;i < teamN; i ++){
         liste[i] = i;
@@ -443,11 +428,9 @@ function selection(){
             //liste.splice(alea,1);
         }
     );
-    //console.log(JSON.stringify(fCode));
-    //whatDoIDoNow();
 }
 
-const Fourmi = function(){
+const Fourmi = function(){  // C'est la classe Fourmi. Chaque objet Team contient une ou plusieurs Fourmi.
     let position = [0,0];
     let code = [[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,10,10],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,10,10],[0,0,0,0,0],[0,0,0,0,0]];
     let n = 0;
@@ -455,27 +438,27 @@ const Fourmi = function(){
     let points = 0;
 };
 
-Fourmi.prototype.fonctionVision = function(n,code){
+Fourmi.prototype.fonctionVision = function(n,code){  // Fonction qui renvoie le coefficient d'attraction en fonction de la distance de l'objet et des coefficients internes.
     var r = code[0] * n * n + code[1] * n + code[2];
     //var r = code[1] * n + code[2];
     r = Math.min(r,code[3]);
     r = Math.max(r,code[4]);
     return r;
 };
-Fourmi.prototype.calculVect = function(A,B,D){
+Fourmi.prototype.calculVect = function(vect,B,code){
     //console.log(D);
-    var norme = Math.abs(A[0]) + Math.abs(A[1]);
+    let norme = Math.abs(vect[0]) + Math.abs(vect[1]);  // Fonction qui renvoie le vecteur d'attraction d'un objet.
     if (norme != 0){
-        A[0] /= norme;
-        A[1] /= norme;
+        vect[0] /= norme;
+        vect[1] /= norme;
     }
-    norme = this.fonctionVision(norme,D);
-    B[0] += A[0] * norme;
-    B[1] += A[1] * norme;
+    norme = this.fonctionVision(norme,code);
+    B[0] += vect[0] * norme;
+    B[1] += vect[1] * norme;
     return B;
 };
 Fourmi.prototype.getData = function(codeN,positionN,nN,carryN,pointsN){
-    // Cette fonction initialise les données internes de la fonction.
+    // Cette fonction initialise les données internes de la fourmi.
     if (codeN == undefined) codeN = [[50,-2,0,0,0],[0,-2,50,0,0],[0,0,0,10,10],[0,0,0,10,10],[0,0,0,10,10],[0,0,0,10,10],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,10,10],[0,0,0,0,0],[0,0,0,0,0]];
     this.code = codeN;
     if (positionN == undefined) positionN = [0,0];
@@ -518,7 +501,7 @@ Fourmi.prototype.addPoints = function(n){
 };
 Fourmi.prototype.tendance = function(fourmis,nourriture,coor,ball){
     // Cette fonction a besoin de la liste de toutes les fourmis, de la liste des positions de la nourriture, et les coordonnées des nids.
-    // La fourmi n veut faire un choix de direction qui se traduira par un nombre entre 0 et 3  4 si elle ne veut aller nulle part.
+    // La fourmi n veut faire un choix de direction qui se traduira par un nombre entre 0 et 3  4 si elle ne veut aller nulle part. (ce qui est très très rare)
     // D'abord chaque objet va lui envoyer un signal sous la forme d'un vecteur dans sa direction
     // On ajoute ce vecteur au vecteur final de la fourmi qui indiquera au final la direction qu'elle veut le plus prendre
     let cc = this.carry; // 0 si la fourmi ne transporte rien 1 sinon
@@ -582,18 +565,6 @@ Fourmi.prototype.chooseDirection = function(fourmis,nourriture,coor,ball){
         else return 0;
     }
 
-    /*
-     if (Math.abs(final[0]) > Math.abs(final[1])){
-     if (final[0] > 0) return 1;
-     else return 3;
-     }
-     else {                                                  // Methode un peu pourrie si vous voulez mon avis
-     if (final[1] > 0) return 2;
-     else if (final[1] < 0) return 0;
-     else return 4;
-     }
-     */
-
 };
 Fourmi.prototype.copy = function(erreurs){ // Cette fonction retourne une copie du code de la fourmi avec un certain nombre d'erreurs !
     var result = [];
@@ -612,8 +583,8 @@ Fourmi.prototype.copy = function(erreurs){ // Cette fonction retourne une copie 
 };
 Fourmi.prototype.yourTurn = function(that,bareme,nourriture,coor,fourmis,ball){
     // C'est la fonction qui sert à dire à la fourmi : vas-y joue ton tour !
-    let dir = this.chooseDirection(fourmis,nourriture,coor,ball);
-    that.move(that,dir,bareme,nourriture,coor,ball);
+    let dir = this.chooseDirection(fourmis,nourriture,coor,ball); // D'abord la fourmi choisit sa direction.
+    that.move(that,dir,bareme,nourriture,coor,ball);              // Et ensuite elle effectue son mouvement.
 };
 Fourmi.prototype.move = function(that,dir,bareme,nourriture,coor,ball){
     // La fourmi avance dans la direction dir ou ne fait rien si dir == 4
@@ -715,8 +686,6 @@ Fourmi.prototype.move = function(that,dir,bareme,nourriture,coor,ball){
     if (coor[this.n][0] == coors[0] && coor[this.n][1] == coors[1] && this.carry == 1) {
         this.carry = 0;
         this.points += this.potential;
-        // La fourmi a rammené de la nourriture à son nid. La nourriture est donc ajoutée à l'emplacement du nid. On ne le fait pas pour le moment.
-        //addFood(coors[0],coors[1]);
     }
 
     // Partie usine !
@@ -886,15 +855,3 @@ Team.prototype.getInteretBall = function(){
     }
     return Math.round(result);
 };
-
-/*                                      // Juste un test des classes prototypées pour être sûr de leur efficacité.
- const FFXIV = function(){};
-
- FFXIV.prototype.sayHello = function(){
- console.log("Hello !");
- };
-
- const aRealmReborn = new FFXIV ();
-
- aRealmReborn.sayHello();
- */
